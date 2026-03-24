@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Output & Console</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></script>
+    <style>
+        /* استيلات خاصة بالـ Body هنا */
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; }
+    </style>
+</head>
+<body class="output-body">
+
+    <!-- 1. DevTools Header (Tabs) -->
+    <div class="devtools-header">
+        <div class="dt-tab active" onclick="toggleDrawer('console')"><i class="fa-solid fa-terminal"></i> Console</div>
+        <div class="dt-tab" onclick="refreshPreview()"><i class="fa-solid fa-rotate-right"></i> Refresh</div>
+    </div>
+
+    <!-- 2. Main Layout -->
+    <div class="main-layout" id="mainLayout">
+        
+        <!-- Left: Preview -->
+        <iframe id="previewFrame" class="preview-pane"></iframe>
+
+    </div>
+
+    <!-- 3. Drawer (Console & Terminal) -->
+    <div class="drawer" id="consoleDrawer">
+        <div class="console-header">
+            <span class="console-title">Console</span>
+            <div class="console-actions">
+                <button onclick="clearConsole()" title="Clear"><i class="fa-solid fa-trash"></i></button>
+                <button onclick="toggleDrawer('hide')" title="Close"><i class="fa-solid fa-times"></i></button>
+            </div>
+        </div>
+        
+        <div class="console-logs" id="consoleLogs">
+            <!-- هنا هتظهر الرسائل -->
+        </div>
+
+        <!-- Command Input (Terminal) -->
+        <div class="console-input-container">
+            <span class="prompt-sign">></span>
+            <input type="text" id="consoleCommand" placeholder="Type JS command and press Enter..." onkeydown="handleCommand(event)">
+        </div>
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGnyVjU_sfU3KfVHW-wyBzE5ufJHFXL8s",
+    authDomain: "es-store-409a3.firebaseapp.com",
+    databaseURL: "https://es-store-409a3-default-rtdb.firebaseio.com",
+    projectId: "es-store-409a3",
+    storageBucket: "es-store-409a3.firebasestorage.app",
+    messagingSenderId: "175100432019",
+    appId: "1:175100432019:web:42754dcbeca82c638c4766",
+    measurementId: "G-8WFPVCZ9BP"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        const previewFrame = document.getElementById('previewFrame');
+        const consoleLogs = document.getElementById('consoleLogs');
+
+        // --- Console Logic ---
+
+        function logToConsole(msg, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            
+            let icon = '<i class="fa-solid fa-angle-right" style="color:#8ab4f8"></i>';
+            if(type === 'error') icon = '<i class="fa-solid fa-circle-xmark" style="color:#f28b82"></i>';
+            if(type === 'warn') icon = '<i class="fa-solid fa-triangle-exclamation" style="color:#fdd663"></i>';
+            if(type === 'info') icon = '<i class="fa-solid fa-circle-info" style="color:#8ab4f8"></i>';
+            
+            // لو الرسالة أوبجكت، نحوله لـ JSON
+            let content = msg;
+            if (typeof msg === 'object') {
+                content = JSON.stringify(msg, null, 2);
+                div.style.whiteSpace = "pre-wrap"; // للحفاظ على التنسيق
+            }
+
+            div.innerHTML = `<span class="icon">${icon}</span><span class="text">${content}</span>`;
+            consoleLogs.appendChild(div);
+            consoleLogs.scrollTop = consoleLogs.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleLogs.innerHTML = '';
+        }
+
+        function toggleDrawer(action) {
+            const drawer = document.getElementById('consoleDrawer');
+            const tabs = document.querySelectorAll('.dt-tab');
+            if(action === 'hide') {
+                drawer.classList.toggle('hidden');
+            } else {
+                drawer.classList.remove('hidden');
+                tabs.forEach(t => t.classList.remove('active'));
+            }
+        }
+
+        // --- Command Execution (Terminal Feature) ---
+        function handleCommand(e) {
+            if (e.key === 'Enter') {
+                const input = document.getElementById('consoleCommand');
+                const cmd = input.value;
+                if (!cmd) return;
+
+                logToConsole(cmd, 'input'); // عرض الأمر اللي كتبته
+                
+                try {
+                    // محاولة تنفيذ الكود داخل الـ Iframe
+                    const result = previewFrame.contentWindow.eval(cmd);
+                    
+                    if (result !== undefined) {
+                        logToConsole(result, 'result');
+                    }
+                } catch (error) {
+                    logToConsole(error.message, 'error');
+                }
+                
+                input.value = ''; تفريغ الخانة
+            }
+        }
+
+        // --- Data Loading & Preview ---
+
+        database.ref('ideData').on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.files) {
+                const files = data.files;
+                let allCSS = "";
+                let allJS = "";
+                let htmlContent = "";
+
+                // تجميع الملفات
+                for (const fileName in files) {
+                    const ext = fileName.split('.').pop().toLowerCase();
+                    if (ext === 'css') allCSS += `/* ${fileName} */\n${files[fileName]}\n`;
+                    else if (ext === 'js') allJS += `// ${fileName}\n${files[fileName]}\n`;
+                    else if (ext === 'html') htmlContent += files[fileName];
+                }
+
+                // بناء الصفحة
+                const finalCode = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>${allCSS}</style>
+                    </head>
+                    <body>
+                        ${htmlContent}
+                        
+                        <script>
+                            // 1. Intercept Console
+                            (function(){
+                                let oldLog = console.log;
+                                let oldErr = console.error;
+                                let oldWarn = console.warn;
+
+                                console.log = function(...args) {
+                                    window.parent.postMessage({type: 'log', args: args}, '*');
+                                    oldLog.apply(console, args);
+                                };
+                                console.error = function(...args) {
+                                    window.parent.postMessage({type: 'error', args: args}, '*');
+                                    oldErr.apply(console, args);
+                                };
+                                console.warn = function(...args) {
+                                    window.parent.postMessage({type: 'warn', args: args}, '*');
+                                    oldWarn.apply(console, args);
+                                };
+                                
+                                // Global Error Handler
+                                window.onerror = function(msg, url, line) {
+                                    window.parent.postMessage({type: 'error', args: [msg + ' (Line: ' + line + ')']}, '*');
+                                }
+                            })();
+                        <\/script>
+                        
+                        <script>${allJS}<\/script>
+                    </body>
+                    </html>
+                `;
+                
+                previewFrame.srcdoc = finalCode;
+            }
+        });
+
+        // استقبال الرسائل من الـ Iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.type) {
+                const args = event.data.args.map(a => {
+                    // محاولة تحسين عرض الأوبجكتات
+                    if (typeof a === 'object') return a; 
+                    return a;
+                });
+                
+                logToConsole(args.join(' '), event.data.type);
+            }
+        });
+
+        function refreshPreview() {
+            // مجرد تحديث للـ srcdoc
+            const current = previewFrame.srcdoc;
+            previewFrame.srcdoc = '';
+            setTimeout(() => previewFrame.srcdoc = current, 10);
+            logToConsole("Preview Refreshed", 'info');
+        }
+
+    </script>
+</body>
+</html>

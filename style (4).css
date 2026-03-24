@@ -1,0 +1,463 @@
+/* Reset & Base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #1e1e1e;
+    height: 100vh;
+    display: flex;
+    color: #cccccc;
+    overflow: hidden;
+}
+
+/* --- Layout Structure --- */
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+}
+
+/* --- Sidebar --- */
+#sidebar {
+    width: 250px;
+    background-color: #252526;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #1e1e1e;
+}
+
+.sidebar-header {
+    padding: 10px 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #bbbbbb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header .actions i {
+    cursor: pointer;
+    margin-left: 10px;
+    opacity: 0.7;
+}
+
+.sidebar-header .actions i:hover {
+    opacity: 1;
+}
+
+.file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 5px;
+}
+
+.file-item {
+    padding: 6px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    position: relative;
+    opacity: 0.8;
+}
+
+.file-item:hover {
+    background-color: #2a2d2e;
+    opacity: 1;
+}
+
+.file-item.active {
+    background-color: #37373d;
+    opacity: 1;
+}
+
+.file-item i {
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.file-item .name {
+    flex: 1;
+}
+
+.file-item .close-icon {
+    display: none;
+    margin-left: auto;
+    font-size: 12px;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+.file-item:hover .close-icon {
+    display: block;
+}
+
+.file-item .close-icon:hover {
+    background: #ffffff22;
+    color: white;
+}
+
+/* --- Main Editor Area --- */
+#main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1e1e1e;
+}
+
+/* Tabs Container (The Professional Look) */
+.tabs-container {
+    height: 35px;
+    background-color: #252526;
+    display: flex;
+    align-items: flex-end;
+    overflow-x: auto;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+.tab {
+    height: 35px;
+    padding: 0 15px;
+    background: #2d2d2d;
+    color: #969696;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-right: 1px solid #1e1e1e;
+    min-width: 120px;
+    font-size: 13px;
+    position: relative;
+}
+
+.tab.active {
+    background: #1e1e1e;
+    color: #ffffff;
+    border-top: 1px solid #007acc;
+    /* الخط الأزرق اللي في الفوق */
+}
+
+.tab i {
+    margin-right: 8px;
+}
+
+.tab .close-tab {
+    margin-left: auto;
+    border-radius: 5px;
+    width: 18px;
+    text-align: center;
+    height: 18px;
+    line-height: 18px;
+    display: none;
+    /* بيظهر لما الماوس يقف */
+}
+
+.tab:hover .close-tab {
+    display: block;
+}
+
+.tab .close-tab:hover {
+    background: #ffffff22;
+}
+
+/* Action Bar (Top Menu) */
+.action-bar {
+    height: 30px;
+    background: #323233;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 13px;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+.action-btn-sm {
+    background: transparent;
+    border: none;
+    color: #cccccc;
+    margin-right: 15px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.action-btn-sm:hover {
+    color: white;
+}
+
+/* Editor Container */
+#editor-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Status Bar (Bottom) */
+.status-bar {
+    height: 22px;
+    background: #007acc;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    font-size: 12px;
+    align-items: center;
+}
+
+.status-item {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+/* CodeMirror Theme Overrides */
+.CodeMirror {
+    height: 100%;
+    font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #1e1e1e;
+}
+
+.CodeMirror-gutters {
+    background: #1e1e1e;
+    border-right: 1px solid #333;
+}
+
+.CodeMirror-linenumber {
+    color: #858585;
+}
+
+.CodeMirror-activeline-background {
+    background: #2a2d2e !important;
+}
+
+.CodeMirror-selected {
+    background: #264f78 !important;
+}
+
+/* Autocomplete Styling */
+.CodeMirror-hints {
+    font-family: 'Consolas', monospace;
+    border: 1px solid #454545;
+    border-radius: 3px;
+    box-shadow: 2px 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* ... الكود القديم الخاص بالـ Editor ... */
+
+/* --- Output Screen Pro Styles --- */
+body.output-body {
+    background-color: #202124;
+    /* لون شبيه بـ Chrome DevTools */
+    color: #bdc1c6;
+    font-family: '.SFNSDisplay-Regular', 'Helvetica Neue', 'Lucida Grande', sans-serif;
+}
+
+/* Top DevTools Bar */
+.devtools-header {
+    display: flex;
+    background: #292a2d;
+    border-bottom: 1px solid #3c3c3c;
+    height: 30px;
+    align-items: center;
+    padding-left: 10px;
+}
+
+.dt-tab {
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    color: #9aa0a6;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    text-transform: capitalize;
+}
+
+.dt-tab.active {
+    color: #8ab4f8;
+    border-bottom-color: #8ab4f8;
+}
+
+.dt-tab:hover {
+    background: #35363a;
+}
+
+/* Layout Container */
+.main-layout {
+    display: flex;
+    height: calc(100vh - 30px);
+}
+
+/* Preview Iframe */
+.preview-pane {
+    flex: 1;
+    background: white;
+    border: none;
+}
+
+/* DevTools Drawer (Console Area) */
+.drawer {
+    height: 250px;
+    background: #202124;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #3c3c3c;
+}
+
+.drawer.hidden {
+    display: none;
+}
+
+/* Console Header */
+.console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background: #292a2d;
+    border-bottom: 1px solid #3c3c3c;
+    cursor: ns-resize;
+    /* تعديل الحجم بالماوس */
+}
+
+.console-title {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.console-actions button {
+    background: transparent;
+    border: none;
+    color: #9aa0a6;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Console Logs */
+.console-logs {
+    flex: 1;
+    overflow-y: auto;
+    padding: 5px 10px;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+}
+
+.log-entry {
+    padding: 3px 0;
+    border-bottom: 1px solid #ffffff10;
+    display: flex;
+    align-items: flex-start;
+}
+
+.log-entry .icon {
+    margin-right: 8px;
+    width: 14px;
+    text-align: center;
+}
+
+.log-entry.error {
+    color: #f28b82;
+}
+
+.log-entry.warn {
+    color: #fdd663;
+}
+
+.log-entry.info {
+    color: #8ab4f8;
+}
+
+/* Console Input (The Terminal) */
+.console-input-container {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    background: #292a2d;
+    border-top: 1px solid #3c3c3c;
+}
+
+.prompt-sign {
+    color: #8ab4f8;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+#consoleCommand {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #e8eaed;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    outline: none;
+}
+/* ... الكود القديم ... */
+
+/* Code Folding Icons */
+.CodeMirror-guttermarker-subtle { color: #586069; }
+.CodeMirror-foldgutter { width: 14px; }
+.CodeMirror-foldgutter-open,
+.CodeMirror-foldgutter-folded { cursor: pointer; color: #586069; font-size: 10px; line-height: 18px;}
+.CodeMirror-foldgutter-open:after { content: "▼"; }
+.CodeMirror-foldgutter-folded:after { content: "▶"; }
+
+/* Autocomplete Hints Styling */
+.CodeMirror-hints {
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #252526;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  font-size: 13px;
+  padding: 0;
+  margin-top: 0;
+  max-height: 20em;
+  overflow-y: auto;
+  z-index: 10000;
+}
+
+.CodeMirror-hint {
+  padding: 2px 6px;
+  color: #d4d4d4;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.CodeMirror-hint-active {
+  background: #094771;
+  color: white;
+}
+
+/* Match Brackets Highlight */
+.CodeMirror-matchingbracket {
+  color: #ffec00 !important;
+  background: #3c3c3c;
+  font-weight: bold;
+}
+
+/* Drop Zone Styling */
+.drop-zone {
+    padding: 20px;
+    text-align: center;
+    color: #555;
+    font-size: 12px;
+    border: 1px dashed #444;
+    margin: 10px;
+    border-radius: 5px;
+    display: none; 
+    pointer-events: none; 
+}
+
+.drop-zone.active {
+    display: block;
+    background: #111;
+    color: #007acc;
+    border-color: #007acc;
+}
